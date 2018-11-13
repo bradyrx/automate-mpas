@@ -4,9 +4,13 @@
 #
 # This script sets up a g-case experiment with lagrangian particles, following
 # all steps until submit.
+
+# Directory of E3SM repository
 E3SM_DIR=/turquoise/usr/projects/climate/rileybrady/E3SM_HPC_Class
 
-# setup
+# ------------------
+# MODEL CONFIGURATION
+# ------------------
 res=T62_oEC60to30v3
 nproc_ocean=512
 nproc_ice=128
@@ -14,8 +18,11 @@ mach=wolf
 pcode=w17_oceaneddies
 input_dir=/lustre/scratch3/turquoise/maltrud/ACME/input_data
 
-# particles
-nvertlevels=0
+# ----------------------
+# PARTICLE CONFIGURATION
+# ----------------------
+nvertlevels=0 # number of particles to seed in the vertical (0 = surface only)
+output_frequency=2 # output frequency in days.
 
 # Case setup.
 echo "Setting up case..."
@@ -72,6 +79,7 @@ RUNDIR=${RUNDIR}/cases/${casename}/run
 mkdir particles
 echo "Adding LIGHT utilities to case directory..."
 cp ${E3SM_DIR}/components/mpas-source/testing_and_setup/compass/utility_scripts/LIGHTparticles/* particles
+
 # Copy user_nl_mpaso into main directory
 # NOTE : Need to add supercycling and RK functionality here.
 cp particles/user_nl_mpaso .
@@ -79,5 +87,9 @@ cp particles/streams.ocean SourceMods/src.mpaso/streams.ocean.lagr
 cp ${RUNDIR}/streams.ocean SourceMods/src.mpaso/streams.ocean.orig
 cd SourceMods/src.mpaso
 cp streams.ocean.orig streams.ocean
-
+# Append Lagrangian streams to main streams.ocean file
+cd ${HOMEDIR}
+python py/append_streams_ocean.py --source ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean.lagr \
+    --dest ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean \
+    --particle ${RUNDIR}/particles.nc --outputfreq ${output_frequency} 
 
