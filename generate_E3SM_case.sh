@@ -59,4 +59,25 @@ cd ${HOMEDIR}
 echo "Editing env_mach_specific..."
 python py/update_env_mach_specific.py --file ${E3SM_DIR}/${casename}/env_mach_specific.xml 
 
-# Run case.setup.
+# Case setup
+cd ${E3SM_DIR}/${casename}
+echo "Setting up case directory..."
+./case.setup -s
+
+# Add particle files to case folder.
+# Parameter expansion to find run directory
+RUNDIR=$(./xmlquery --value CIME_OUTPUT_ROOT)
+RUNDIR=${RUNDIR%/*}
+RUNDIR=${RUNDIR}/cases/${casename}/run
+mkdir particles
+echo "Adding LIGHT utilities to case directory..."
+cp ${E3SM_DIR}/components/mpas-source/testing_and_setup/compass/utility_scripts/LIGHTparticles/* particles
+# Copy user_nl_mpaso into main directory
+# NOTE : Need to add supercycling and RK functionality here.
+cp particles/user_nl_mpaso .
+cp particles/streams.ocean SourceMods/src.mpaso/streams.ocean.lagr
+cp ${RUNDIR}/streams.ocean SourceMods/src.mpaso/streams.ocean.orig
+cd SourceMods/src.mpaso
+cp streams.ocean.orig streams.ocean
+
+
