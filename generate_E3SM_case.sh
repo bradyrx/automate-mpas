@@ -51,7 +51,13 @@ fi
 if [ -d "../../$casename" ]
 then
     echo "ERROR: Specified case already exists."
-    exit 1
+    echo "Would you like to delete the case folder and continue?"
+    read -p "Continue? (Y/N): " confirm
+    if [ $confirm == 'Y' ]; then
+        rm -rf ${E3SM_DIR}/${casename}
+    else
+        exit 1
+    fi
 fi
 
 ./create_newcase -s --case ../../${casename} --compset GMPAS-IAF --res ${res} \
@@ -126,6 +132,6 @@ python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${partt
 # BUILD
 echo "Building case..."
 echo "------------------"
-./case.build
+#./case.build
 
 # Edit wall-clock time and number of days to run.
