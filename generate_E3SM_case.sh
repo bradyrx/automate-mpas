@@ -41,7 +41,7 @@ then
     exit 1
 fi
 
-./create_newcase --case ../../${casename} --compset GMPAS-IAF --res ${res} \
+./create_newcase -s --case ../../${casename} --compset GMPAS-IAF --res ${res} \
     --mach ${mach} --compiler gnu --mpilib openmpi --project ${pcode} \
     --input-dir ${input_dir}
 cd ${HOMEDIR} 
@@ -53,7 +53,10 @@ echo "Setting nprocs to ${nproc_ocean} for the ocean."
 echo "Setting nprocs to ${nproc_ice} for the ice."
 ./xmlchange -s --file env_mach_pes.xml NTASKS_ICE=${nproc_ice}
 ./xmlchange -s --file env_mach_pes.xml ROOTPE_OCN=${nproc_ice}
+cd ${HOMEDIR}
 
 # Edit env_mach_specific to add mkl. 
+echo "Editing env_mach_specific..."
+python py/update_env_mach_specific.py --file ${E3SM_DIR}/${casename}/env_mach_specific.xml 
 
 # Run case.setup.
