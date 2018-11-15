@@ -4,9 +4,7 @@
 #
 # This script sets up a g-case experiment with lagrangian particles, following
 # all steps until submit.
-
 # ------------------
-
 E3SM_DIR=/turquoise/usr/projects/climate/rileybrady/E3SM_HPC_Class
 
 # ------------------
@@ -15,9 +13,16 @@ E3SM_DIR=/turquoise/usr/projects/climate/rileybrady/E3SM_HPC_Class
 res=T62_oEC60to30v3
 nproc_ocean=512
 nproc_ice=128
-mach=wolf
+mach=grizzly
 pcode=w17_oceaneddies
 input_dir=/lustre/scratch3/turquoise/maltrud/ACME/input_data
+
+# ------------------
+# RUN CONFIGURATION
+# ------------------
+WALLCLOCK=00:20:00
+STOP_OPTION=ndays # select either "ndays" or "nmonths"
+STOP_N=5 # number of days/months depending on STOP_OPTION
 
 # ----------------------
 # PARTICLE CONFIGURATION
@@ -30,6 +35,15 @@ particletype=(surface passive) # space-separated particle types
 # ----------------------
 # START CODE
 # ----------------------
+echo "NOTE: Make sure to enable a python2.7 environment."
+
+# Checking some early stuff to not waste user's time
+# (1) Ensure that the runtime option is appropriate.
+if [[ ! "$STOP_OPTION" =~ ^(ndays|nmonths)$ ]]; then 
+    echo "ERROR: $STOP_OPTION not valid stop option. Please use 'ndays' or 'nmonths'."
+    exit 1
+fi
+
 # Case setup.
 echo "Setting up case..."
 echo "------------------"
@@ -83,7 +97,7 @@ cd ${E3SM_DIR}/${casename}
 echo "Setting up case directory..."
 ./case.setup -s
 
-# Add particle files to case folder.
+# Add particle files to case folder. 
 # Parameter expansion to find run directory
 RUNDIR=$(./xmlquery --value CIME_OUTPUT_ROOT)
 RUNDIR=${RUNDIR%/*}
@@ -132,6 +146,21 @@ python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${partt
 # BUILD
 echo "Building case..."
 echo "------------------"
-#./case.build
+cd ${E3SM_DIR}/${casename}
+./case.build
 
-# Edit wall-clock time and number of days to run.
+# Set wallclock, runtime, etc.
+echo "Setting wallclock time to ${WALLCLOCK}..."
+./xmlchange -s --file env_batch.xml JOB_WALLCLOCK_TIME=${WALLCLOCK}
+
+if [ ${STOP_OPTION} == 'ndays' ]; then
+    echo "Setting run length to ${STOP_N} days..."
+elif [ ${STOP_OPTION} == 'nmonths' ]; then
+    echo "Setting run length to ${STOP_N} months..."
+fi
+./xmlchange -s --file env_run.xml STOP_OPTION=${STOP_OPTION}
+./xmlchange -s --file env_run.xml STOP_N=${STOP_N}
+
+# Submit case.
+echo "SUBMITTING JOB..."
+# ./case.submit
