@@ -27,7 +27,7 @@ STOP_N=5 # number of days/months depending on STOP_OPTION
 # ----------------------
 # PARTICLE CONFIGURATION
 # ----------------------
-nvertlevels=10 # number of particles to seed in the vertical (0 = no particles)
+nvertlevels=10 # number of particles to seed in the vertical (0 = no particles). NOTE: May need to edit this a bit if user wants only surface particles.
 output_frequency=2 # output frequency in days.
 # vertseedtype=linear # seed strategy for particles; currently not supported
 particletype=(surface passive) # space-separated particle types
@@ -38,7 +38,14 @@ particletype=(surface passive) # space-separated particle types
 echo "NOTE: Make sure to enable a python2.7 environment."
 
 # Checking some early stuff to not waste user's time
-# (1) Ensure that the runtime option is appropriate.
+# (1) See if a few critical packages are installed for python.
+python -c "import lxml"
+if (( $? == 1 )); then
+    echo "You must install lxml for python before continuing."
+    exit 1  
+fi
+
+# (2) Ensure that the runtime option is appropriate.
 if [[ ! "$STOP_OPTION" =~ ^(ndays|nmonths)$ ]]; then 
     echo "ERROR: $STOP_OPTION not valid stop option. Please use 'ndays' or 'nmonths'."
     exit 1
@@ -56,9 +63,11 @@ if (( nvertlevels == 0 ))
 then
     casename=${casename}.noParticles
     PARTICLES=false
+    echo "USER HAS ELECTED TO HAVE NO PARTICLES IN THIS RUN."
 else
     casename=${casename}.${nvertlevels}ParticleLayers
     PARTICLES=true
+    echo "USER HAS ELECTED FOR GLOBAL SEEDING WITH ${nvertlevels} VERTICAL LAYERS."
 fi 
 
 # check if case exists to avoid overwrite.
