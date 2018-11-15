@@ -175,5 +175,11 @@ fi
 ./xmlchange -s --file env_run.xml STOP_N=${STOP_N}
 
 # Submit case.
-echo "SUBMITTING JOB..."
-# ./case.submit
+read -p "Would you like to submit the job now? (Y/N): " confirm
+if [ ${confirm} == 'Y' ]; then
+    echo "SUBMITTING JOB..."
+    ./case.submit
+else
+    echo "Exiting setup. Use ./case.submit to submit your job."
+    exit 0
+fi
