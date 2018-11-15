@@ -102,46 +102,50 @@ echo "Setting up case directory..."
 RUNDIR=$(./xmlquery --value CIME_OUTPUT_ROOT)
 RUNDIR=${RUNDIR%/*}
 RUNDIR=${RUNDIR}/cases/${casename}/run
-mkdir particles
-echo "Adding LIGHT utilities to case directory..."
-cp ${E3SM_DIR}/components/mpas-source/testing_and_setup/compass/utility_scripts/LIGHTparticles/* particles
 
-# Copy user_nl_mpaso into main directory
-# NOTE : Need to add supercycling and RK functionality here.
-echo "Editing streams.ocean file..."
-cp particles/user_nl_mpaso .
-cp particles/streams.ocean SourceMods/src.mpaso/streams.ocean.lagr
-cp ${RUNDIR}/streams.ocean SourceMods/src.mpaso/streams.ocean.orig
-cd SourceMods/src.mpaso
-cp streams.ocean.orig streams.ocean
-# Append Lagrangian streams to main streams.ocean file
-cd ${HOMEDIR}
-python py/append_streams_ocean.py --source ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean.lagr \
-    --dest ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean \
-    --particle ${RUNDIR}/particles.nc --outputfreq ${output_frequency} 
+# Branch based on if this is a particle run.
+if ${PARTICLES}; then
+    mkdir particles
+    echo "Adding LIGHT utilities to case directory..."
+    cp ${E3SM_DIR}/components/mpas-source/testing_and_setup/compass/utility_scripts/LIGHTparticles/* particles
 
-# Build particle file
-# get init and graph file
-python py/assist_particle_build.py --stream ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean \
-    --graph ${input_dir}/ocn/mpas-o/${res#*_} -p ${nproc_ocean} \
-    -o ${HOMEDIR}
-graph=`cat temp_graph`
-init=`cat temp_init`
-rm temp_graph
-rm temp_init
+    # Copy user_nl_mpaso into main directory
+    # NOTE : Need to add supercycling and RK functionality here.
+    echo "Editing streams.ocean file..."
+    cp particles/user_nl_mpaso .
+    cp particles/streams.ocean SourceMods/src.mpaso/streams.ocean.lagr
+    cp ${RUNDIR}/streams.ocean SourceMods/src.mpaso/streams.ocean.orig
+    cd SourceMods/src.mpaso
+    cp streams.ocean.orig streams.ocean
+    # Append Lagrangian streams to main streams.ocean file
+    cd ${HOMEDIR}
+    python py/append_streams_ocean.py --source ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean.lagr \
+       --dest ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean \
+        --particle ${RUNDIR}/particles.nc --outputfreq ${output_frequency} 
 
-# parse particle types
-parttype=''
-for val in "${particletype[@]}"; do 
-    if [ -z "$parttype" ]; then 
-        parttype=$val 
-    else parttype=$parttype,$val 
-fi done
+    # Build particle file
+    # get init and graph file
+    python py/assist_particle_build.py --stream ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean \
+        --graph ${input_dir}/ocn/mpas-o/${res#*_} -p ${nproc_ocean} \
+        -o ${HOMEDIR}
+    graph=`cat temp_graph`
+    init=`cat temp_init`
+    rm temp_graph
+    rm temp_init
 
-# Build particle file
-cd ${E3SM_DIR}/${casename}/particles
-python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-    --nvertlevels ${nvertlevels} -o ${RUNDIR}/particles.nc
+    # parse particle types
+    parttype=''
+    for val in "${particletype[@]}"; do 
+        if [ -z "$parttype" ]; then 
+            parttype=$val 
+        else parttype=$parttype,$val 
+    fi done
+
+    # Build particle file
+    cd ${E3SM_DIR}/${casename}/particles
+    python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
+        --nvertlevels ${nvertlevels} -o ${RUNDIR}/particles.nc
+fi
 
 # BUILD
 echo "Building case..."
