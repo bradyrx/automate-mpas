@@ -10,6 +10,7 @@ E3SM_DIR=/turquoise/usr/projects/climate/rileybrady/E3SM_HPC_Class
 # ------------------
 # MODEL CONFIGURATION
 # ------------------
+BGC=false # whether or not to have a BGC active run
 res=T62_oEC60to30v3
 nproc_ocean=512
 nproc_ice=128
@@ -31,6 +32,13 @@ nvertlevels=10 # number of particles to seed in the vertical (0 = no particles).
 output_frequency=2 # output frequency in days.
 # vertseedtype=linear # seed strategy for particles; currently not supported
 particletype=(surface passive) # space-separated particle types
+
+# -----------------------------
+# PARTICLE SENSOR CONFIGURATION
+# -----------------------------
+# Need to add booleans here for temp, salinity, DIC, etc.
+# This should modify the Registry since currently isn't supported
+# in the namelist.
 
 # ----------------------
 # START CODE
@@ -58,7 +66,16 @@ echo "------------------"
 HOMEDIR=`pwd`
 
 cd ${E3SM_DIR}/cime/scripts
-casename=GMPAS-IAF.${res}.${mach}.${nproc_ocean}o.${nproc_ice}i
+# Set casename dependent on BGC-active or physics-only
+if ${BGC}
+then
+    echo "USER HAS ELECTED FOR OCEAN BIOGEOCHEMISTRY"
+    casename=GMPAS-OECO-ODMS-IAF
+else
+    echo "USER HAS ELECTED FOR PHYSICS-ONLY"
+    casename=GMPAS-IAF
+fi
+casename=${casename}.${res}.${mach}.${nproc_ocean}o.${nproc_ice}i
 if (( nvertlevels == 0 )) 
 then
     casename=${casename}.noParticles
@@ -83,9 +100,16 @@ then
     fi
 fi
 
-./create_newcase -s --case ../../${casename} --compset GMPAS-IAF --res ${res} \
-    --mach ${mach} --compiler gnu --mpilib openmpi --project ${pcode} \
-    --input-dir ${input_dir}
+if ${BGC}
+then
+    ./create_newcase -s --case ../../${casename} --compset GMPAS-OECO-ODMS-IAF --res ${res} \
+        --mach ${mach} --compiler gnu --mpilib openmpi --project ${pcode} \
+        --input-dir ${input_dir}
+else
+    ./create_newcase -s --case ../../${casename} --compset GMPAS-IAF --res ${res} \
+        --mach ${mach} --compiler gnu --mpilib openmpi --project ${pcode} \
+        --input-dir ${input_dir}
+fi
 cd ${HOMEDIR} 
 
 # Set nprocs
