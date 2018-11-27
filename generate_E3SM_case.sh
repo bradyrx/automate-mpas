@@ -5,7 +5,8 @@
 # This script sets up a g-case experiment with lagrangian particles, following
 # all steps until submit.
 # ------------------
-E3SM_DIR=/turquoise/usr/projects/climate/rileybrady/E3SM_bgcSensors
+#E3SM_DIR=/turquoise/usr/projects/climate/rileybrady/E3SM_bgcSensors
+E3SM_DIR=/path/to/E3SM/directory
 
 # ------------------
 # MODEL CONFIGURATION
@@ -28,7 +29,7 @@ STOP_N=5 # number of days/months depending on STOP_OPTION
 # ----------------------
 # PARTICLE CONFIGURATION
 # ----------------------
-nvertlevels=10 # number of particles to seed in the vertical (0 = no particles). NOTE: May need to edit this a bit if user wants only surface particles.
+nvertlevels=5 # number of particles to seed in the vertical (0 = no particles). NOTE: May need to edit this a bit if user wants only surface particles.
 output_frequency=2 # output frequency in days.
 # vertseedtype=linear # seed strategy for particles; currently not supported
 particletype=(surface passive) # space-separated particle types
@@ -93,7 +94,6 @@ then
     python py/update_particle_sampling.py --file ${registry_dir} -t ${sampleTemperature} \
         -s ${sampleSalinity} -d ${sampleDIC} -a ${sampleALK}
 fi
-exit 0
 
 # Case setup.
 echo "Setting up case..."
@@ -191,6 +191,11 @@ if ${PARTICLES}; then
     python py/append_streams_ocean.py --source ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean.lagr \
        --dest ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean \
         --particle ${RUNDIR}/particles.nc --outputfreq ${output_frequency} 
+
+    # Append sensor output to streams file
+    echo "Appending sensor output to streams.ocean..."
+    python py/add_sensors_to_streams.py --file ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean \
+        -t ${sampleTemperature} -s ${sampleSalinity} -d ${sampleDIC} -a ${sampleALK}
 
     # Build particle file
     # get init and graph file
