@@ -5,7 +5,7 @@
 # This script sets up a g-case experiment with lagrangian particles, following
 # all steps until submit.
 # ------------------
-E3SM_DIR=/turquoise/usr/projects/climate/rileybrady/E3SM_HPC_Class
+E3SM_DIR=/turquoise/usr/projects/climate/rileybrady/E3SM_bgcSensors
 
 # ------------------
 # MODEL CONFIGURATION
@@ -36,9 +36,13 @@ particletype=(surface passive) # space-separated particle types
 # -----------------------------
 # PARTICLE SENSOR CONFIGURATION
 # -----------------------------
-# Need to add booleans here for temp, salinity, DIC, etc.
-# This should modify the Registry since currently isn't supported
-# in the namelist.
+# This determines whether or not sampling will be turned on for the given
+# variables.
+# NOTE: Need to also add these to the streams file as output...
+sampleTemperature=false
+sampleSalinity=false
+sampleDIC=false
+sampleALK=false
 
 # ----------------------
 # START CODE
@@ -58,6 +62,38 @@ if [[ ! "$STOP_OPTION" =~ ^(ndays|nmonths)$ ]]; then
     echo "ERROR: $STOP_OPTION not valid stop option. Please use 'ndays' or 'nmonths'."
     exit 1
 fi
+
+# Output sampling. Editing the sampling here before anything else since we
+# are directly modifying a Registry file.
+if (( nvertlevels != 0 ))
+then
+    registry_dir=${E3SM_DIR}/components/mpas-source/src/core_ocean/analysis_members/Registry_lagrangian_particle_tracking.xml
+    if ${sampleTemperature}; then
+        echo "Sample Temperature: TRUE"
+    else
+        echo "Sample Temperature: FALSE"
+    fi
+    if ${sampleSalinity}; then
+        echo "Sample Salinity: TRUE"
+    else
+        echo "Sample Salinity: FALSE"
+    fi
+    if ${BGC}; then
+        if ${sampleDIC}; then
+            echo "Sample DIC: TRUE"
+        else
+            echo "Sample DIC: FALSE"
+        fi
+        if ${sampleALK}; then
+            echo "Sample ALK: TRUE"
+        else
+            echo "Sample ALK: FALSE"
+        fi
+    fi
+    python py/update_particle_sampling.py --file ${registry_dir} -t ${sampleTemperature} \
+        -s ${sampleSalinity} -d ${sampleDIC} -a ${sampleALK}
+fi
+exit 0
 
 # Case setup.
 echo "Setting up case..."
