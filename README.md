@@ -21,12 +21,6 @@ A set of scripts to automate the process of setting up, building, and submitting
 
 Note that when running the script with `nproc_ocean` and `nproc_ice` set, you need to have graph files built for these number of processors. The graph file has to live in the input directory you specify. 
 
-## Shell Script Options
-
-The user should only need to modify header variables in the main `automate_mpas_simulation.sh` script.
-
-At a minimum, `E3SM_DIR` should be changed to the direct path to the base E3SM folder. If the graph file doesn't exist, you can generate one easily:
-
 Load METIS module on IC:
 
 `module use /usr/projects/climate/SHARED_CLIMATE/modulefiles/all`
@@ -39,6 +33,11 @@ Then run the following command:
 
 Where `graph_file` is the base graph_file for that mesh and `nproc` is the number of processors you desire.
 
+## Shell Script Options
+
+The user should only need to modify header variables in the main `automate_mpas_simulation.sh` script.
+
+At a minimum, `E3SM_DIR` should be changed to the direct path to the base E3SM folder. If the graph file doesn't exist, you can generate one easily:
 
 ### Model Configuration
 
