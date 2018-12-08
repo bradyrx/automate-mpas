@@ -5,7 +5,6 @@
 # This script sets up a g-case experiment with lagrangian particles, following
 # all steps until submit.
 # ------------------
-#E3SM_DIR=/turquoise/usr/projects/climate/rileybrady/E3SM_bgcSensors
 E3SM_DIR=/path/to/E3SM/directory
 
 # ------------------
@@ -16,7 +15,7 @@ res=T62_oEC60to30v3
 nproc_ocean=512
 nproc_ice=128
 mach=grizzly
-pcode=w17_oceaneddies
+pcode=ACCOUNT # place account here
 input_dir=/lustre/scratch3/turquoise/maltrud/ACME/input_data
 
 # ------------------
@@ -29,7 +28,7 @@ STOP_N=5 # number of days/months depending on STOP_OPTION
 # ----------------------
 # PARTICLE CONFIGURATION
 # ----------------------
-nvertlevels=5 # number of particles to seed in the vertical (0 = no particles). NOTE: May need to edit this a bit if user wants only surface particles.
+nvertlevels=10 # number of particles to seed in the vertical (0 = no particles). NOTE: May need to edit this a bit if user wants only surface particles.
 output_frequency=2 # output frequency in days.
 # vertseedtype=linear # seed strategy for particles; currently not supported
 particletype=(surface passive) # space-separated particle types
@@ -64,31 +63,51 @@ if [[ ! "$STOP_OPTION" =~ ^(ndays|nmonths)$ ]]; then
     exit 1
 fi
 
+# (3) Check that default settings have been changed.
+if [ ${pcode} == "ACCOUNT" ]; then
+    echo "Please input an account to charge."
+    exit 1
+fi
+
+if [ ${E3SM_DIR} == "/path/to/E3SM/directory" ]; then
+    echo "Please input the E3SM directory under E3SM_DIR."
+    exit 1
+fi
+
 # Output sampling. Editing the sampling here before anything else since we
 # are directly modifying a Registry file.
+appendSensor=""
 if (( nvertlevels != 0 ))
 then
     registry_dir=${E3SM_DIR}/components/mpas-source/src/core_ocean/analysis_members/Registry_lagrangian_particle_tracking.xml
     if ${sampleTemperature}; then
         echo "Sample Temperature: TRUE"
+        appendSensor=${appendSensor}Ton
     else
         echo "Sample Temperature: FALSE"
+        appendSensor=${appendSensor}Toff
     fi
     if ${sampleSalinity}; then
         echo "Sample Salinity: TRUE"
+        appendSensor=${appendSensor}.Son
     else
         echo "Sample Salinity: FALSE"
+        appendSensor=${appendSensor}.Soff
     fi
     if ${BGC}; then
         if ${sampleDIC}; then
             echo "Sample DIC: TRUE"
+            appendSensor=${appendSensor}.DICon
         else
             echo "Sample DIC: FALSE"
+            appendSensor=${appendSensor}.DICoff
         fi
         if ${sampleALK}; then
             echo "Sample ALK: TRUE"
+            appendSensor=${appendSensor}.ALKon
         else
             echo "Sample ALK: FALSE"
+            appendSensor=${appendSensor}.ALKoff
         fi
     fi
     python py/update_particle_sampling.py --file ${registry_dir} -t ${sampleTemperature} \
@@ -122,6 +141,8 @@ else
     PARTICLES=true
     echo "USER HAS ELECTED FOR GLOBAL SEEDING WITH ${nvertlevels} VERTICAL LAYERS."
 fi 
+# Add sensor declarations
+casename=${casename}.${appendSensor}
 
 # check if case exists to avoid overwrite.
 if [ -d "../../$casename" ]
