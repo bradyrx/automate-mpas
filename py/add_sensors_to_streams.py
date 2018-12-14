@@ -29,7 +29,8 @@ def append_streams(streams, variable, logical):
                 stream.append(newvar)
 
 
-def main(filepath, temperature, salinity, DIC, ALK):
+def main(filepath, temperature, salinity, DIC, ALK, PO4, NO3, SiO3, NH4,
+         Fe, O2):
     tree = et.parse(filepath)
     root = tree.getroot()
     streams = root.findall('stream')
@@ -37,6 +38,12 @@ def main(filepath, temperature, salinity, DIC, ALK):
     append_streams(streams, 'particleSalinity', salinity)
     append_streams(streams, 'particleDIC', DIC)
     append_streams(streams, 'particleALK', ALK)
+    append_streams(streams, 'particlePO4', PO4)
+    append_streams(streams, 'particleNO3', NO3)
+    append_streams(streams, 'particleSiO3', SiO3)
+    append_streams(streams, 'particleNH4', NH4)
+    append_streams(streams, 'particleFe', Fe)
+    append_streams(streams, 'particleO2', O2)
     et.ElementTree(root).write(filepath, pretty_print=True)
 
 
@@ -53,10 +60,29 @@ if __name__ == '__main__':
             help="If true, sample DIC.")
     ap.add_argument('-a', '--ALK', required=True, type=str,
             help="If true, sample ALK.")
+    ap.add_argument('-p', '--PO4', required=True, type=str,
+            help="If true, sample PO4.")
+    ap.add_argument('-n', '--NO3', required=True, type=str,
+            help="If true, sample NO3.")
+    ap.add_argument('-i', '--SiO3', required=True, type=str,
+            help="If true, sample SiO3.")
+    ap.add_argument('-h', '--NH4', required=True, type=str,
+            help="If true, sample NH4.")
+    ap.add_argument('-f', '--Fe', required=True, type=str,
+            help="If true, sample Fe.")
+    ap.add_argument('-o', '--O2', required=True, type=str,
+            help="If true, sample O2.")
     args = vars(ap.parse_args())
     filepath = args['file']
     temperature = str2bool(args['temperature'])
     salinity = str2bool(args['salinity'])
     DIC = str2bool(args['DIC'])
     ALK = str2bool(args['ALK'])
-    main(filepath, temperature, salinity, DIC, ALK)
+    PO4 = str2bool(args['PO4'])
+    NO3 = str2bool(args['NO3'])
+    SiO3 = str2bool(args['SiO3'])
+    NH4 = str2bool(args['NH4'])
+    Fe = str2bool(args['Fe'])
+    O2 = str2bool(args['O2'])
+    main(filepath, temperature, salinity, DIC, ALK, PO4, NO3, SiO3, NH4,
+         Fe, O2)

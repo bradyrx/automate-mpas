@@ -59,7 +59,9 @@ def update_sampling(options, variable, logical):
             else:
                 option.set('default_value', '.false.')
 
-def main(filepath, temperature, salinity, DIC, ALK):
+
+def main(filepath, temperature, salinity, DIC, ALK, PO4, NO3, SiO3, NH4,
+         Fe, O2):
     add_root(filepath)
     tree = et.parse(filepath)
     root = tree.getroot()
@@ -69,6 +71,12 @@ def main(filepath, temperature, salinity, DIC, ALK):
     update_sampling(options, 'salinity', salinity)
     update_sampling(options, 'DIC', DIC)
     update_sampling(options, 'ALK', ALK)
+    update_sampling(options, 'PO4', PO4)
+    update_sampling(options, 'NO3', NO3)
+    update_sampling(options, 'SiO3', SiO3)
+    update_sampling(options, 'NH4', NH4)
+    update_sampling(options, 'Fe', Fe)
+    update_sampling(options, 'O2', O2)
     et.ElementTree(root).write(filepath, pretty_print=True)
     # Remove the root added to top and bottom of file.
     with open(filepath, 'r') as fin:
@@ -90,10 +98,29 @@ if __name__ == '__main__':
             help="If true, sample DIC.")
     ap.add_argument('-a', '--ALK', required=True, type=str,
             help="If true, sample ALK.")
+    ap.add_argument('-p', '--PO4', required=True, type=str,
+            help="If true, sample PO4.")
+    ap.add_argument('-n', '--NO3', required=True, type=str,
+            help="If true, sample NO3.")
+    ap.add_argument('-i', '--SiO3', required=True, type=str,
+            help="If true, sample SiO3.")
+    ap.add_argument('-h', '--NH4', required=True, type=str,
+            help="If true, sample NH4.")
+    ap.add_argument('-f', '--Fe', required=True, type=str,
+            help="If true, sample Fe.")
+    ap.add_argument('-o', '--O2', required=True, type=str,
+            help="If true, sample O2.")
     args = vars(ap.parse_args())
     filepath = args['file']
     temperature = str2bool(args['temperature'])
     salinity = str2bool(args['salinity'])
     DIC = str2bool(args['DIC'])
     ALK = str2bool(args['ALK'])
-    main(filepath, temperature, salinity, DIC, ALK)
+    PO4 = str2bool(args['PO4'])
+    NO3 = str2bool(args['NO3'])
+    SiO3 = str2bool(args['SiO3'])
+    NH4 = str2bool(args['NH4'])
+    Fe = str2bool(args['Fe'])
+    O2 = str2bool(args['O2'])
+    main(filepath, temperature, salinity, DIC, ALK, PO4, NO3, SiO3, NH4,
+         Fe, O2)

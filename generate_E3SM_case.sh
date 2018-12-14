@@ -38,11 +38,16 @@ particletype=(surface passive) # space-separated particle types
 # -----------------------------
 # This determines whether or not sampling will be turned on for the given
 # variables.
-# NOTE: Need to also add these to the streams file as output...
 sampleTemperature=false
 sampleSalinity=false
 sampleDIC=false
 sampleALK=false
+samplePO4=false
+sampleNO3=false
+sampleSiO3=false
+sampleNH4=false
+sampleFe=false
+sampleO2=false
 
 # ----------------------
 # START CODE
@@ -108,6 +113,48 @@ then
         else
             echo "Sample ALK: FALSE"
             appendSensor=${appendSensor}.ALKoff
+        fi
+        if ${samplePO4}; then
+            echo "Sample PO4: TRUE"
+            appendSensor=${appendSensor}.PO4on
+        else
+            echo "Sample PO4: FALSE"
+            appendSensor=${appendSensor}.PO4off
+        fi
+        if ${sampleNO3}; then
+            echo "Sample NO3: TRUE"
+            appendSensor=${appendSensor}.NO3on
+        else
+            echo "Sample NO3: FALSE"
+            appendSensor=${appendSensor}.NO3off
+        fi
+        if ${sampleSiO3}; then
+            echo "Sample SiO3: TRUE"
+            appendSensor=${appendSensor}.SiO3on
+        else
+            echo "Sample SiO3: FALSE"
+            appendSensor=${appendSensor}.SiO3off
+        fi
+        if ${sampleNH4}; then
+            echo "Sample NH4: TRUE"
+            appendSensor=${appendSensor}.NH4on
+        else
+            echo "Sample NH4: FALSE"
+            appendSensor=${appendSensor}.NH4off
+        fi
+        if ${sampleFe}; then
+            echo "Sample Fe: TRUE"
+            appendSensor=${appendSensor}.Feon
+        else
+            echo "Sample Fe: FALSE"
+            appendSensor=${appendSensor}.Feoff
+        fi
+        if ${sampleO2}; then
+            echo "Sample O2: TRUE"
+            appendSensor=${appendSensor}.O2on
+        else
+            echo "Sample O2: FALSE"
+            appendSensor=${appendSensor}.O2off
         fi
     fi
     python py/update_particle_sampling.py --file ${registry_dir} -t ${sampleTemperature} \
