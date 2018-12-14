@@ -66,7 +66,7 @@ if __name__ == '__main__':
             help="If true, sample NO3.")
     ap.add_argument('-i', '--SiO3', required=True, type=str,
             help="If true, sample SiO3.")
-    ap.add_argument('-h', '--NH4', required=True, type=str,
+    ap.add_argument('--NH4', required=True, type=str,
             help="If true, sample NH4.")
     ap.add_argument('-f', '--Fe', required=True, type=str,
             help="If true, sample Fe.")
