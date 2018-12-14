@@ -9,7 +9,7 @@ A set of scripts to automate the process of setting up, building, and submitting
 
 1. Run `git clone git@github.com:bradyrx/automate_mpas_simulation.git` on an institutional computer (Grizzly and Wolf tested at LANL).
 
-2. Add folder to your E3SM directory. Make sure that a version of MPAS with particles is checked out. E.g., check out the `particlePassiveFloatVerticalTreatmentFix` branch from https://github.com/pwolfram/MPAS-Model.
+2. Add folder to your E3SM directory. Make sure that a version of MPAS with particles is checked out. E.g., check out the `particlePassiveFloatVerticalTreatmentFix` branch from https://github.com/pwolfram/MPAS-Model. It is crucial to have the bleeding edge checked out to have functionality for all BGC sensors.
 
 3. Load a python2.7 virtual environment and make sure `lxml` is installed.
 
@@ -37,7 +37,7 @@ Where `graph_file` is the base graph_file for that mesh and `nproc` is the numbe
 
 The user should only need to modify header variables in the main `automate_mpas_simulation.sh` script.
 
-At a minimum, `E3SM_DIR` should be changed to the direct path to the base E3SM folder. If the graph file doesn't exist, you can generate one easily:
+At a minimum, `E3SM_DIR` should be changed to the direct path to the base E3SM folder and `pcode` should be changed to the appropriate account/project code.
 
 ### Model Configuration
 
@@ -77,7 +77,7 @@ Options pertaining to particle setup.
 
 Options pertaining to sensors on board the e-floats.
 
-**NOTE**: The only current way to turn on sensors is to directly modify the source Registry in the MPAS-O directory. It currently cannot be changed via `user_nl_mpaso`. Thus, check your LIGHT Registry when submitting jobs in the future if you aren't using this script.
+**NOTE**: The only current way to turn on sensors is to directly modify the source Registry in the MPAS-O directory. It currently cannot be changed via `user_nl_mpaso`. Thus, check your LIGHT Registry when submitting jobs in the future if you aren't using this script to make sure you have the appropriate registry booleans set.
 
 | Option            |  Description                                                          | Example Values |
 |-------------------|-----------------------------------------------------------------------|----------------|
@@ -85,5 +85,10 @@ Options pertaining to sensors on board the e-floats.
 | sampleSalinity    | If true, save out salinity along float trajectory                     | true/false     |
 | sampleDIC         | If true, save out DIC along float trajectory (only runs if BGC is on) | true/false     |
 | sampleALK         | If true, save out ALK along float trajectory (only runs if BGC is on) | true/false     |
-
+| samplePO4         | If true, save out PO4 along float trajectory (only runs if BGC is on) | true/false     |
+| sampleNO3         | If true, save out NO3 along float trajectory (only runs if BGC is on) | true/false     |
+| sampleSiO3         | If true, save out SiO3 along float trajectory (only runs if BGC is on) | true/false     |
+| sampleNH4         | If true, save out NH4 along float trajectory (only runs if BGC is on) | true/false     |
+| sampleFe         | If true, save out Fe along float trajectory (only runs if BGC is on) | true/false     |
+| sampleO2         | If true, save out O2 along float trajectory (only runs if BGC is on) | true/false     |
 
