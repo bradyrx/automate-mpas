@@ -159,7 +159,7 @@ then
     fi
     python py/update_particle_sampling.py --file ${registry_dir} -t ${sampleTemperature} \
         -s ${sampleSalinity} -d ${sampleDIC} -a ${sampleALK} -p ${samplePO4} \
-        -n ${sampleNO3} -i ${sampleSiO3} --NH4 ${sampleNH4} -f ${sampleFe} \
+        -n ${sampleNO3} -i ${sampleSiO3} --NH4 ${sampleNH4} -e ${sampleFe} \
         -o ${sampleO2}
 fi
 
@@ -267,7 +267,7 @@ if ${PARTICLES}; then
     python py/add_sensors_to_streams.py --file ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean \
         -t ${sampleTemperature} -s ${sampleSalinity} -d ${sampleDIC} -a ${sampleALK} \
         -p ${samplePO4} -n ${sampleNO3} -i ${sampleSiO3} --NH4 ${sampleNH4} \
-        -f ${sampleFe} -o ${sampleO2}
+        -e ${sampleFe} -o ${sampleO2}
 
     # Build particle file
     # get init and graph file
