@@ -305,9 +305,9 @@ if [[ ${BGC} && ${res} == "T62_oRRS30to10v3" ]]; then
       --dest ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean
   rm temp_ecosys_monthly_flux
 fi
-exit 0
+
 # ------------------
-# BUILD RUN 
+# BUILD RUN
 # ------------------
 echo "Building case..."
 echo "------------------"
