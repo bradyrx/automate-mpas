@@ -163,7 +163,9 @@ then
         -o ${sampleO2}
 fi
 
-# Case setup.
+# ----------------------
+# CASE SETUP 
+# ----------------------
 echo "Setting up case..."
 echo "------------------"
 
@@ -242,7 +244,9 @@ RUNDIR=$(./xmlquery --value CIME_OUTPUT_ROOT)
 RUNDIR=${RUNDIR%/*}
 RUNDIR=${RUNDIR}/cases/${casename}/run
 
-# Branch based on if this is a particle run.
+# ----------------------
+# PARTICLE CONFIGURATION 
+# ----------------------
 if ${PARTICLES}; then
     mkdir particles
     echo "Adding LIGHT utilities to case directory..."
@@ -293,7 +297,18 @@ if ${PARTICLES}; then
         --nvertlevels ${nvertlevels} -o ${RUNDIR}/particles.nc
 fi
 
-# BUILD
+# If 30to10 case and BGC, need to append proper surface fluxes to streams.ocean file.
+if [[ ${BGC} && ${res} == "T62_oRRS30to10v3" ]]; then
+  cd ${HOMEDIR}
+  cp txt/ecosys_monthly_flux temp_ecosys_monthly_flux
+  python py/add_surface_flux_30to10.py --source temp_ecosys_monthly_flux \
+      --dest ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean
+  rm temp_ecosys_monthly_flux
+fi
+exit 0
+# ------------------
+# BUILD RUN 
+# ------------------
 echo "Building case..."
 echo "------------------"
 cd ${E3SM_DIR}/${casename}
@@ -311,7 +326,9 @@ fi
 ./xmlchange -s --file env_run.xml STOP_OPTION=${STOP_OPTION}
 ./xmlchange -s --file env_run.xml STOP_N=${STOP_N}
 
-# Submit case.
+# ------------------
+# SUBMIT CASE 
+# ------------------
 read -p "Would you like to submit the job now? (Y/N): " confirm
 if [ ${confirm} == 'Y' ]; then
     echo "SUBMITTING JOB..."

@@ -1,0 +1,16 @@
+<stream name="ecosys_monthly_flux" type="input" filename_template="/lustre/scratch3/turquoise/maltrud/ACME/input_data/ocn/mpas-o/oRRS30to10v3/oRRS30to10v3.monthlySurfaceForcingBGC.171130.nc" input_interval="none" packages="ecosysTracersPKG">
+    <var name="xtime"/>
+    <var name="depositionFluzNO3"/>
+    <var name="depositionFluzNH4"/>
+    <var name="IRON_FLUZ_IN"/>
+    <var name="dust_FLUZ_IN"/>
+    <var name="riverFluzNO3"/>
+    <var name="riverFluzPO4"/>
+    <var name="riverFluzDON"/>
+    <var name="riverFluzDOP"/>
+    <var name="riverFluzSiO3"/>
+    <var name="riverFluzFe"/>
+    <var name="riverFluzDIC"/>
+    <var name="riverFluzALK"/>
+    <var name="riverFluzDOC"/>
+</stream>
