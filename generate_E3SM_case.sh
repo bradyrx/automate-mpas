@@ -154,17 +154,14 @@ else
     casename=${casename}.${appendSensor}
 fi 
 
-# check if case exists to avoid overwrite.
-if [ -d "../../$casename" ]
-then
-    echo "ERROR: Specified case already exists."
-    echo "Would you like to delete the case folder and continue?"
-    read -p "Continue? (Y/N): " confirm
-    if [ $confirm == 'Y' ]; then
-        rm -rf ${E3SM_DIR}/${casename}
-    else
-        exit 1
-    fi
+# If case already exists, append a new integer to the end of it.
+if [[ -e ${E3SM_DIR}/${casename} ]]; then
+    echo "ENTERED LOOP"
+    i=1
+    while [[ -e ${E3SM_DIR}/${casename}-${i} ]]; do
+        let i++
+    done
+    casename=${casename}-${i}
 fi
 
 if ${BGC}
@@ -178,6 +175,10 @@ else
         --input-dir ${input_dir}
 fi
 cd ${HOMEDIR} 
+
+# Copy config file to case directory for easy reproducability
+mkdir ${E3SM_DIR}/${casename}/automate_mpas_simulation
+cp config.sh ${E3SM_DIR}/${casename}/automate_mpas_simulation
 
 # Set nprocs
 cd ${E3SM_DIR}/${casename}
