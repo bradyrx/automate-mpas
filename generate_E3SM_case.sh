@@ -191,9 +191,9 @@ else
     casename=${casename}.${nvertlevels}ParticleLayers
     PARTICLES=true
     echo "USER HAS ELECTED FOR GLOBAL SEEDING WITH ${nvertlevels} VERTICAL LAYERS."
+    # Add sensor declarations
+    casename=${casename}.${appendSensor}
 fi 
-# Add sensor declarations
-casename=${casename}.${appendSensor}
 
 # check if case exists to avoid overwrite.
 if [ -d "../../$casename" ]
@@ -301,6 +301,11 @@ fi
 
 # If 30to10 case and BGC, need to append proper surface fluxes to streams.ocean file.
 if [[ ${BGC} && ${res} == "T62_oRRS30to10v3" ]]; then
+  # If there are no particles, then streams.ocean hasn't been copied to SourceMods yet.
+  if [ ${PARTICLES} == false ]; then
+      cd ${E3SM_DIR}/${casename}
+      cp ${RUNDIR}/streams.ocean SourceMods/src.mpaso
+  fi
   cd ${HOMEDIR}
   cp txt/ecosys_monthly_flux temp_ecosys_monthly_flux
   python py/add_surface_flux_30to10.py --source temp_ecosys_monthly_flux \
