@@ -9,11 +9,11 @@ A set of scripts to automate the process of setting up, building, and submitting
 
 1. Run `git clone git@github.com:bradyrx/automate_mpas_simulation.git` on an institutional computer (Grizzly and Wolf tested at LANL).
 
-2. Add folder to your E3SM directory. Make sure that a version of MPAS with particles is checked out. E.g., check out the `particlePassiveFloatVerticalTreatmentFix` branch from https://github.com/pwolfram/MPAS-Model. It is crucial to have the bleeding edge checked out to have functionality for all BGC sensors.
+2. Add folder to your E3SM directory or any other directory. Make sure that a version of MPAS with particles is checked out. E.g., check out the `particlePassiveFloatVerticalTreatmentFix` branch from https://github.com/pwolfram/MPAS-Model. It is crucial to have the bleeding edge checked out to have functionality for all BGC sensors.
 
 3. Load a python2.7 virtual environment and make sure `lxml` is installed.
 
-4. Edit the header variables in `generate_E3SM_case.sh` to set resolution, machine, p-code, particle count, etc.
+4. Edit `config.sh` to set resolution, machine, p-code, particle count, etc.
 
 5. Run `bash generate_E3SM_case.sh`
 
@@ -35,7 +35,7 @@ Where `graph_file` is the base graph_file for that mesh and `nproc` is the numbe
 
 ## Shell Script Options
 
-The user should only need to modify header variables in the main `automate_mpas_simulation.sh` script.
+The user should only modify variables in the `config.sh` file.
 
 At a minimum, `E3SM_DIR` should be changed to the direct path to the base E3SM folder and `pcode` should be changed to the appropriate account/project code.
 
