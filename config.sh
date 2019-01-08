@@ -28,6 +28,7 @@ nvertlevels=10 # number of particles to seed in the vertical (0 = no particles).
 output_frequency=2 # output frequency in days.
 # vertseedtype=linear # seed strategy for particles; currently not supported
 particletype=(surface passive) # space-separated particle types
+SOfilter=false # true to seed only the Southern Ocean with particles
 
 # -----------------------------
 # PARTICLE SENSOR CONFIGURATION

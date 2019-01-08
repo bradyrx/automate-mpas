@@ -255,8 +255,13 @@ if ${PARTICLES}; then
 
     # Build particle file
     cd ${E3SM_DIR}/${casename}/particles
-    python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-        --nvertlevels ${nvertlevels} -o ${RUNDIR}/particles.nc
+    if ${SOfilter}; then
+        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
+            --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ -o ${RUNDIR}/particles.nc
+    else
+        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
+            --nvertlevels ${nvertlevels} -o ${RUNDIR}/particles.nc
+    fi
 fi
 
 # If 30to10 case and BGC, need to append proper surface fluxes to streams.ocean file.
