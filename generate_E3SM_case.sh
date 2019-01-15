@@ -257,10 +257,11 @@ if ${PARTICLES}; then
     cd ${E3SM_DIR}/${casename}/particles
     if ${SOfilter}; then
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-            --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ -o ${RUNDIR}/particles.nc
+            --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
+            -o ${RUNDIR}/particles.nc
     else
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-            --nvertlevels ${nvertlevels} -o ${RUNDIR}/particles.nc
+            --nvertlevels ${nvertlevels} --downsample ${downsample} -o ${RUNDIR}/particles.nc
     fi
 fi
 

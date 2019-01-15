@@ -26,6 +26,7 @@ STOP_N=5 # number of days/months depending on STOP_OPTION
 # ----------------------
 nvertlevels=10 # number of particles to seed in the vertical (0 = no particles). NOTE: May need to edit this a bit if user wants only surface particles.
 output_frequency=2 # output frequency in days.
+downsample=0 # levels of downsampling (coarsening)
 # vertseedtype=linear # seed strategy for particles; currently not supported
 particletype=(surface passive) # space-separated particle types
 SOfilter=false # true to seed only the Southern Ocean with particles
