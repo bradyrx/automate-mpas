@@ -122,6 +122,7 @@ then
         -o ${sampleO2}
 fi
 
+
 # ----------------------
 # CASE SETUP 
 # ----------------------
@@ -153,6 +154,9 @@ else
     # Add sensor declarations
     casename=${casename}.${appendSensor}
 fi 
+if (( downsample != 0 ))
+    casename=${casename}.downsample${downsample}
+fi
 
 # If case already exists, append a new integer to the end of it.
 if [[ -e ${E3SM_DIR}/${casename} ]]; then
