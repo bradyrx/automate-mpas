@@ -77,8 +77,10 @@ def remap_particles(fin, fpart, fdecomp): #{{{
     currentBlock = f_part.variables['currentBlock']
     try:
         currentCell = f_part.variables['currentCell']
+        currentCellGlobalID = f_part.variables['currentCellGlobalID']
     except:
         currentCell = f_part.createVariable('currentCell', 'i', ('nParticles'))
+        currentCellGlobalID = f_part.createVariable('currentCellGlobalID', 'i', ('nParticles'))
 
     # get the cell positions
     xcell = f_in.variables['xCell']
@@ -96,7 +98,8 @@ def remap_particles(fin, fpart, fdecomp): #{{{
     # load the decomposition (apply to latest time step)
     decomp = np.genfromtxt(fdecomp)
     currentBlock[-1,:] = decomp[cellIndices]
-    currentCell[-1,:] = cellIndices + 1
+    currentCell[-1,:] = -1
+    currentCellGlobalID[-1,:] = cellIndices + 1
 
     # close the files
     f_in.close()
@@ -151,7 +154,7 @@ def downsample_points(x, y, z, tri, nsplit): #{{{
             R = P.T.tocsr()
             A = R * A * P
 
-    return x[Cpts], y[Cpts], z[Cpts] #}}}
+    return Cpts, x[Cpts], y[Cpts], z[Cpts] #}}}
 
 class Particles(): #{{{
 
@@ -185,6 +188,7 @@ class Particles(): #{{{
             self.buoysurf = buoysurf
         self.buoypart = ensure_shape(x, buoypart)[ids]
         self.cellindices = cellindices[ids]
+        self.cellGlobalID = cellindices[ids]
 
         # index level following floats
         self.indexlevel = ensure_shape(x, indexlevel)[ids]
@@ -195,6 +199,21 @@ class Particles(): #{{{
         self.yreset = ensure_shape(x, yreset)[ids]
         self.zreset = ensure_shape(x, zreset)[ids]
         self.zlevelreset = ensure_shape(x, zlevelreset)[ids]
+
+        return #}}}
+
+    def compute_lat_lon(self): #{{{
+        """
+        Ripped out whole-sale from latlon_coordinate_transforms.py
+        PJW 01/15/2019
+        """
+
+        x = self.x
+        y = self.y
+        z = self.z
+
+        self.latParticle = np.arcsin(z / np.sqrt(x ** 2 + y ** 2 + z ** 2))
+        self.lonParticle = np.arctan2(y, x)
 
         return #}}}
 #}}}
@@ -245,6 +264,13 @@ class ParticleList(): #{{{
 
         return self.nparticles #}}}
 
+    # probably a cleaner way to have this "fall through" to the particle instances themselves,
+    # but didn't have time to sort this all out so this isn't general for now
+    def compute_lat_lon(self): #{{{
+        for alist in self.particlelist:
+            alist.compute_lat_lon()
+        return #}}}
+
 
     def write(self, f_name, f_decomp):  #{{{
 
@@ -262,11 +288,14 @@ class ParticleList(): #{{{
         f_out.createVariable('xParticle', 'f8', ('Time','nParticles'))
         f_out.createVariable('yParticle', 'f8', ('Time','nParticles'))
         f_out.createVariable('zParticle', 'f8', ('Time','nParticles'))
+        f_out.createVariable('lonParticle', 'f8', ('Time','nParticles'))
+        f_out.createVariable('latParticle', 'f8', ('Time','nParticles'))
         f_out.createVariable('zLevelParticle', 'f8', ('Time','nParticles'))
         f_out.createVariable('dtParticle', 'f8', ('Time','nParticles'))
         f_out.createVariable('buoyancyParticle', 'f8', ('Time','nParticles'))
         f_out.createVariable('currentBlock', 'i', ('Time', 'nParticles'))
         f_out.createVariable('currentCell', 'i', ('Time', 'nParticles'))
+        f_out.createVariable('currentCellGlobalID', 'i', ('Time', 'nParticles'))
         f_out.createVariable('indexToParticleID', 'i', ('nParticles'))
         f_out.createVariable('verticalTreatment', 'i', ('Time','nParticles'))
         f_out.createVariable('indexLevel', 'i', ('Time','nParticles'))
@@ -281,6 +310,10 @@ class ParticleList(): #{{{
         f_out.variables['xParticle'][0,:] = self.x
         f_out.variables['yParticle'][0,:] = self.y
         f_out.variables['zParticle'][0,:] = self.z
+
+        self.compute_lat_lon()
+        f_out.variables['lonParticle'][0,:] = self.lonParticle
+        f_out.variables['latParticle'][0,:] = self.latParticle
 
         f_out.variables['verticalTreatment'][0,:] = self.verticaltreatment
 
@@ -303,6 +336,7 @@ class ParticleList(): #{{{
         f_out.variables['currentBlock'][0,:] = decomp[self.cellindices]
         f_out.variables['currentBlockReset'][:] = decomp[self.cellindices]
         f_out.variables['currentCell'][0,:] = -1
+        f_out.variables['currentCellGlobalID'][0,:] = self.cellGlobalID + 1
         f_out.variables['currentCellReset'][:] = -1
         f_out.variables['xParticleReset'][:] = f_out.variables['xParticle'][0,:]
         f_out.variables['yParticleReset'][:] = f_out.variables['yParticle'][0,:]
@@ -331,13 +365,13 @@ def cell_centers(f_init, downsample): #{{{
     xCell, yCell, zCell = get_cell_coords(f_init)
     if downsample:
         tri = f_init.variables['cellsOnVertex'][:,:] - 1
-        xCell, yCell, zCell = downsample_points(xCell, yCell, zCell, tri, downsample)
+        cpts, xCell, yCell, zCell = downsample_points(xCell, yCell, zCell, tri, downsample)
     f_init.close()
 
-    return xCell, yCell, zCell  #}}}
+    return cpts, xCell, yCell, zCell  #}}}
 
 
-def build_isopycnal_particles(xCell, yCell, zCell, buoysurf, afilter): #{{{
+def build_isopycnal_particles(cpts, xCell, yCell, zCell, buoysurf, afilter): #{{{
 
     nparticles = len(xCell)
     nbuoysurf = buoysurf.shape[0]
@@ -347,12 +381,12 @@ def build_isopycnal_particles(xCell, yCell, zCell, buoysurf, afilter): #{{{
     z = expand_nlevels(zCell, nbuoysurf)
 
     buoypart = (np.tile(buoysurf,(nparticles,1))).reshape(nparticles*nbuoysurf,order='F').copy()
-    cellindices = np.tile(np.arange(nparticles), (nbuoysurf))
+    cellindices = np.tile(cpts, (nbuoysurf))
 
     return Particles(x, y, z, cellindices, 'buoyancySurface', buoypart=buoypart, buoysurf=buoysurf, spatialfilter=afilter) #}}}
 
 
-def build_passive_floats(xCell, yCell, zCell, f_init, nvertlevels, afilter, vertseedtype): #{{{
+def build_passive_floats(cpts, xCell, yCell, zCell, f_init, nvertlevels, afilter, vertseedtype): #{{{
 
     x = expand_nlevels(xCell, nvertlevels)
     y = expand_nlevels(yCell, nvertlevels)
@@ -366,8 +400,8 @@ def build_passive_floats(xCell, yCell, zCell, f_init, nvertlevels, afilter, vert
         wgts = dense_center_seeding(nvertlevels)
     else:
         raise ValueError("Must designate `vertseedtype` as one of the following: ['linear', 'log', 'denseCenter']")
-    zlevel = -np.kron(wgts, f_init.variables['bottomDepth'][:])
-    cellindices = np.tile(np.arange(len(xCell)), (nvertlevels))
+    zlevel = -np.kron(wgts, f_init.variables['bottomDepth'][cpts])
+    cellindices = np.tile(cpts, (nvertlevels))
     f_init.close()
 
     return Particles(x, y, z, cellindices, 'passiveFloat', zlevel=zlevel, spatialfilter=afilter) #}}}
@@ -388,30 +422,30 @@ def dense_center_seeding(nVert): #{{{
     c_wgts = np.concatenate([upper[1:], center[1:-1], lower[0:-1]])
     return c_wgts
 
-def build_surface_floats(xCell, yCell, zCell, afilter): #{{{
+def build_surface_floats(cpts, xCell, yCell, zCell, afilter): #{{{
 
     x = expand_nlevels(xCell, 1)
     y = expand_nlevels(yCell, 1)
     z = expand_nlevels(zCell, 1)
-    cellindices = np.arange(len(xCell))
+    cellindices = cpts
 
     return Particles(x, y, z, cellindices, 'indexLevel', indexlevel=1, zlevel=0, spatialfilter=afilter) #}}}
 
 
 def build_particle_file(f_init, f_name, f_decomp, types, spatialfilter, buoySurf, nVertLevels, downsample, vertseedtype): #{{{
 
-    xCell, yCell, zCell = cell_centers(f_init, downsample)
+    cpts, xCell, yCell, zCell = cell_centers(f_init, downsample)
 
     # build particles
     particlelist = []
     if 'buoyancy' in types or 'all' in types:
-        particlelist.append(build_isopycnal_particles(xCell, yCell, zCell, buoySurf, spatialfilter))
+        particlelist.append(build_isopycnal_particles(cpts, xCell, yCell, zCell, buoySurf, spatialfilter))
     if 'passive' in types or 'all' in types:
-        particlelist.append(build_passive_floats(xCell, yCell, zCell, f_init, nVertLevels, spatialfilter, vertseedtype))
+        particlelist.append(build_passive_floats(cpts, xCell, yCell, zCell, f_init, nVertLevels, spatialfilter, vertseedtype))
     # apply surface particles everywhere to ensure that LIGHT works
     # (allow for some load-imbalance for filters)
     if 'surface' in types or 'all' in types:
-        particlelist.append(build_surface_floats(xCell, yCell, zCell, spatialfilter))
+        particlelist.append(build_surface_floats(cpts, xCell, yCell, zCell, spatialfilter))
 
     # write particles to disk
     ParticleList(particlelist).write(f_name, f_decomp)

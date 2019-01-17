@@ -154,7 +154,7 @@ else
     # Add sensor declarations
     casename=${casename}.${appendSensor}
 fi 
-if (( downsample != 0 ))
+if (( downsample != 0 )); then
     casename=${casename}.downsample${downsample}
 fi
 
@@ -258,14 +258,21 @@ if ${PARTICLES}; then
     fi done
 
     # Build particle file
-    cd ${E3SM_DIR}/${casename}/particles
+    cd ${HOMEDIR}/particles
     if ${SOfilter}; then
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
             --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
-            -o ${RUNDIR}/particles.nc
+            --vertseedtype ${vertseedtype} -o ${RUNDIR}/particles.nc
+        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
+            --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
+            --vertseedtype ${vertseedtype} --remap -o ${RUNDIR}/particles.nc
     else
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-            --nvertlevels ${nvertlevels} --downsample ${downsample} -o ${RUNDIR}/particles.nc
+            --nvertlevels ${nvertlevels} --downsample ${downsample} --vertseedtype ${vertseedtype} \
+            -o ${RUNDIR}/particles.nc
+        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
+            --nvertlevels ${nvertlevels} --downsample ${downsample} --vertseedtype ${vertseedtype} \
+            --remap -o ${RUNDIR}/particles.nc
     fi
 fi
 
