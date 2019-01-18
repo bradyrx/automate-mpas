@@ -157,6 +157,14 @@ fi
 if (( downsample != 0 )); then
     casename=${casename}.downsample${downsample}
 fi
+if ${SOfilter}
+then
+    echo "USER HAS RESTRICTED PARTICLES TO THE SOUTHERN OCEAN."
+    casename=${casename}.SOfilterOn
+else
+    echo "USER HAS ELECTED FOR GLOBAL PARTICLE SEEDING."
+    casename=${casename}.SOfilterOff
+fi
 
 # If case already exists, append a new integer to the end of it.
 if [[ -e ${E3SM_DIR}/${casename} ]]; then
