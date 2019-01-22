@@ -191,6 +191,12 @@ cd ${HOMEDIR}
 # Copy config file to case directory for easy reproducability
 mkdir ${E3SM_DIR}/${casename}/automate_mpas_simulation
 cp config.sh ${E3SM_DIR}/${casename}/automate_mpas_simulation
+# Add a few hundred lines of git log to know which MPAS and E3SM commits
+# are being used.
+cd ${E3SM_DIR}
+git log | head -n 500 > ${E3SM_DIR}/${casename}/automate_mpas_simulation/E3SM.git.log
+cd components/mpas-source/
+git log | head -n 500 > ${E3SM_DIR}/${casename}/automate_mpas_simulation/MPAS.git.log
 
 # Set nprocs
 cd ${E3SM_DIR}/${casename}
