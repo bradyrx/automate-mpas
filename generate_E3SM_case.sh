@@ -191,6 +191,7 @@ cd ${HOMEDIR}
 # Copy config file to case directory for easy reproducability
 mkdir ${E3SM_DIR}/${casename}/automate_mpas_simulation
 cp config.sh ${E3SM_DIR}/${casename}/automate_mpas_simulation
+cp particles/make_particle_file.py ${E3SM_DIR}/${casename}/automate_mpas_simulation
 # Add a few hundred lines of git log to know which MPAS and E3SM commits
 # are being used.
 cd ${E3SM_DIR}
@@ -276,16 +277,16 @@ if ${PARTICLES}; then
     if ${SOfilter}; then
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
             --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
-            --vertseedtype ${vertseedtype} -o ${RUNDIR}/particles.nc
-        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-            --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
-            --vertseedtype ${vertseedtype} --remap -o ${RUNDIR}/particles.nc
-    else
-        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-            --nvertlevels ${nvertlevels} --downsample ${downsample} --vertseedtype ${vertseedtype} \
             -o ${RUNDIR}/particles.nc
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-            --nvertlevels ${nvertlevels} --downsample ${downsample} --vertseedtype ${vertseedtype} \
+            --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
+            --remap -o ${RUNDIR}/particles.nc
+    else
+        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
+            --nvertlevels ${nvertlevels} --downsample ${downsample} \
+            -o ${RUNDIR}/particles.nc
+        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
+            --nvertlevels ${nvertlevels} --downsample ${downsample} \
             --remap -o ${RUNDIR}/particles.nc
     fi
 fi
@@ -303,7 +304,6 @@ if [[ ${BGC} && ${res} == "T62_oRRS30to10v3" ]]; then
       --dest ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean
   rm temp_ecosys_monthly_flux
 fi
-
 # ------------------
 # BUILD RUN
 # ------------------
