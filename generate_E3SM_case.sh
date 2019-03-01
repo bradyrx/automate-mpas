@@ -173,7 +173,6 @@ fi
 
 # If case already exists, append a new integer to the end of it.
 if [[ -e ${E3SM_DIR}/${casename} ]]; then
-    echo "ENTERED LOOP"
     i=1
     while [[ -e ${E3SM_DIR}/${casename}-${i} ]]; do
         let i++
@@ -283,16 +282,10 @@ if ${PARTICLES}; then
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
             --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
             -o ${RUNDIR}/particles.nc
-#        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-#            --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
-#            --remap -o ${RUNDIR}/particles.nc
     else
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
             --nvertlevels ${nvertlevels} --downsample ${downsample} \
             -o ${RUNDIR}/particles.nc
-#        python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-#            --nvertlevels ${nvertlevels} --downsample ${downsample} \
-#            --remap -o ${RUNDIR}/particles.nc
     fi
 fi
 
@@ -309,7 +302,7 @@ if [[ ${BGC} && ${res} == "T62_oRRS30to10v3" ]]; then
       --dest ${E3SM_DIR}/${casename}/SourceMods/src.mpaso/streams.ocean
   rm temp_ecosys_monthly_flux
 fi
-exit 0
+
 # ------------------
 # BUILD RUN
 # ------------------
