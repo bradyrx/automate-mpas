@@ -39,27 +39,29 @@ else
     casename=GMPAS-IAF
 fi
 casename=${casename}.${res}.${mach}.${nproc_ocean}o.${nproc_ice}i
+
+# Change casename depending on particles being on.
 if ${PARTICLES_ON}
 then
     casename=${casename}.${nvertlevels}ParticleLayers
     echo "USER HAS ELECTED FOR PARTICLES WITH ${nvertlevels} VERTICAL LAYERS."
     # Add sensor declarations
     casename=${casename}.${appendSensor}
+    if (( downsample != 0 )); then
+        casename=${casename}.downsample${downsample}
+    fi
+    if ${SOfilter}
+    then
+        echo "USER HAS RESTRICTED PARTICLES TO THE SOUTHERN OCEAN."
+        casename=${casename}.SOfilterOn
+    else
+        echo "USER HAS ELECTED FOR GLOBAL PARTICLE SEEDING."
+        casename=${casename}.SOfilterOff
+    fi
 else
     casename=${casename}.noParticles
     echo "USER HAS ELECTED TO HAVE NO PARTICLES IN THIS RUN."
 fi 
-if (( downsample != 0 )); then
-    casename=${casename}.downsample${downsample}
-fi
-if ${SOfilter}
-then
-    echo "USER HAS RESTRICTED PARTICLES TO THE SOUTHERN OCEAN."
-    casename=${casename}.SOfilterOn
-else
-    echo "USER HAS ELECTED FOR GLOBAL PARTICLE SEEDING."
-    casename=${casename}.SOfilterOff
-fi
 
 # If case already exists, append a new integer to the end of it.
 if [[ -e ${E3SM_DIR}/${casename} ]]; then
@@ -131,6 +133,11 @@ if ${PARTICLES_ON}; then
     # NOTE : Need to add supercycling and RK functionality here.
     echo "Editing streams.ocean file..."
     cp particles/user_nl_mpaso .
+    # Add supercycling if desired
+    if [ ${supercycle} != false ]; then
+        python ${HOMEDIR}/py/supercycle.py -i ${E3SM_DIR}/${casename}/user_nl_mpaso -s ${supercycle}
+    fi
+
     cp particles/streams.ocean SourceMods/src.mpaso/streams.ocean.lagr
     cp ${RUNDIR}/streams.ocean SourceMods/src.mpaso/streams.ocean.orig
     cd SourceMods/src.mpaso
@@ -167,7 +174,7 @@ if ${PARTICLES_ON}; then
     fi done
 
     # Build particle file
-    cd ${HOMEDIR}/particles
+    cd ${E3SM_DIR}/${casename}/particles
     if ${SOfilter}; then
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
             --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
