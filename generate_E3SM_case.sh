@@ -39,17 +39,15 @@ else
     casename=GMPAS-IAF
 fi
 casename=${casename}.${res}.${mach}.${nproc_ocean}o.${nproc_ice}i
-if (( nvertlevels == 0 )) 
+if ${PARTICLES_ON}
 then
-    casename=${casename}.noParticles
-    PARTICLES=false
-    echo "USER HAS ELECTED TO HAVE NO PARTICLES IN THIS RUN."
-else
     casename=${casename}.${nvertlevels}ParticleLayers
-    PARTICLES=true
-    echo "USER HAS ELECTED FOR GLOBAL SEEDING WITH ${nvertlevels} VERTICAL LAYERS."
+    echo "USER HAS ELECTED FOR PARTICLES WITH ${nvertlevels} VERTICAL LAYERS."
     # Add sensor declarations
     casename=${casename}.${appendSensor}
+else
+    casename=${casename}.noParticles
+    echo "USER HAS ELECTED TO HAVE NO PARTICLES IN THIS RUN."
 fi 
 if (( downsample != 0 )); then
     casename=${casename}.downsample${downsample}
@@ -124,7 +122,7 @@ RUNDIR=${RUNDIR}/cases/${casename}/run
 # ----------------------
 # PARTICLE CONFIGURATION 
 # ----------------------
-if ${PARTICLES}; then
+if ${PARTICLES_ON}; then
     mkdir particles
     echo "Adding LIGHT utilities to case directory..."
     cp ${E3SM_DIR}/components/mpas-source/testing_and_setup/compass/utility_scripts/LIGHTparticles/* particles
@@ -184,7 +182,7 @@ fi
 # If 30to10 case and BGC, need to append proper surface fluxes to streams.ocean file.
 if [[ ${BGC} && ${res} == "T62_oRRS30to10v3" ]]; then
   # If there are no particles, then streams.ocean hasn't been copied to SourceMods yet.
-  if [ ${PARTICLES} == false ]; then
+  if [ ${PARTICLES_ON} == false ]; then
       cd ${E3SM_DIR}/${casename}
       cp ${RUNDIR}/streams.ocean SourceMods/src.mpaso
   fi

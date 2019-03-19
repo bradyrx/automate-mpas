@@ -6,7 +6,8 @@
 # python packages are loaded and certain config options are 
 # declared.
 # ------------------
-source ../config.sh
+`cd ..`
+source config.sh
 
 # (1) See if a few critical packages are installed for python.
 python -c "import lxml"
