@@ -178,10 +178,10 @@ if ${PARTICLES_ON}; then
     if ${SOfilter}; then
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
             --nvertlevels ${nvertlevels} --spatialfilter SouthernOceanXYZ --downsample ${downsample} \
-            -o ${RUNDIR}/particles.nc
+            -l ${seedLoc} -o ${RUNDIR}/particles.nc
     else
         python make_particle_file.py -i ${init} -g ${graph} -p ${nproc_ocean} -t ${parttype} \
-            --nvertlevels ${nvertlevels} --downsample ${downsample} \
+            --nvertlevels ${nvertlevels} --downsample ${downsample} -l ${seedLoc} \
             -o ${RUNDIR}/particles.nc
     fi
 fi
