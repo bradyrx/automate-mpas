@@ -104,12 +104,6 @@ echo "Setting nprocs to ${nproc_ice} for the ice."
 ./xmlchange -s --file env_mach_pes.xml ROOTPE_OCN=${nproc_ice}
 cd ${HOMEDIR}
 
-# Edit env_mach_specific to add mkl. 
-if [ ${mach} == "grizzly" ] || [ ${mach} == "wolf" ]; then
-  echo "Editing env_mach_specific..."
-  python py/update_env_mach_specific.py --file ${E3SM_DIR}/${casename}/env_mach_specific.xml 
-fi
-
 # Case setup
 cd ${E3SM_DIR}/${casename}
 echo "Setting up case directory..."
